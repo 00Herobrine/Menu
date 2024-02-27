@@ -1,0 +1,8 @@
+name: Menu
+version: '${project.version}'
+main: org.x00hero.Main
+api-version: '1.19'
+commands:
+  menu:
+    description: "Open Menus"
+    usage: "/menu scaling n shit"
