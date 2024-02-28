@@ -7,7 +7,9 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.x00hero.Config;
 import org.x00hero.Menu.Pages.Page;
+import org.x00hero.Validator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +18,8 @@ import java.util.List;
 public class MenuItem extends ItemStack {
     public static final int UNPAGED_SLOT = -1;
     protected int slot = UNPAGED_SLOT;
-    protected boolean isEnabled = true, isCancelClick = false;
+    protected int intendedSlot = UNPAGED_SLOT;
+    protected boolean isEnabled = true, isCancelClick = false, dynamic = false;
     protected Page page;
     protected String ID;
     protected static final String Key = "MenuItem";
@@ -29,16 +32,22 @@ public class MenuItem extends ItemStack {
     public MenuItem(MenuItem menuItem) {
         super(menuItem);
         this.slot = menuItem.slot;
+        this.intendedSlot = menuItem.intendedSlot;
         this.isEnabled = menuItem.isEnabled;
         this.isCancelClick = menuItem.isCancelClick;
         this.page = menuItem.page;
+        this.ID = menuItem.ID;
+        this.dynamic = menuItem.dynamic;
     }
     public MenuItem(MenuItem menuItem, int slot) {
         super(menuItem);
         this.slot = slot;
+        this.intendedSlot = slot;
         this.isEnabled = menuItem.isEnabled;
         this.isCancelClick = menuItem.isCancelClick;
         this.page = menuItem.page;
+        this.ID = menuItem.ID;
+        this.dynamic = menuItem.dynamic;
     }
     public MenuItem(ItemStack itemStack, int slot) {
         super(itemStack);
@@ -63,6 +72,7 @@ public class MenuItem extends ItemStack {
         super(material, amount);
         setName(name);
         setLore(lore);
+        setCustomData(Config.getMenuItemKey(), PersistentDataType.STRING, Validator.encode(Config.getMenuItemString()));
     }
     public Object getCustomData(NamespacedKey key, PersistentDataType type) { return getItemMeta().getPersistentDataContainer().getOrDefault(key, type, "1"); }
     public void setCustomData(NamespacedKey key, PersistentDataType type, Object input) { setCustomData(this, key, type, input); }

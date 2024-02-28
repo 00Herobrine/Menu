@@ -1,4 +1,4 @@
 NavigationItem-Key: NavItem
 MenuItem-Key: MenuItem
-bit-encryption: 1024
+bytes: 1024
 secret-key:

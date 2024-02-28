@@ -10,7 +10,7 @@ import org.x00hero.Menu.Pages.Page;
 public class NavigationItemClickEvent extends MenuClickEvent {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
     private final NavigationItem navigationItem;
-    public NavigationItemClickEvent(Player player, Page page, NavigationItem navigationItem, InventoryClickEvent event) {
+    public NavigationItemClickEvent(Player player, NavigationItem navigationItem, Page page, InventoryClickEvent event) {
         super(player, page, navigationItem, event.getCursor(), event);
         this.navigationItem = navigationItem;
         //event.setCancelled(true);

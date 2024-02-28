@@ -1,13 +1,12 @@
 package org.x00hero.Menu.Pages;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.x00hero.Menu.Menu;
-import org.x00hero.MenuController;
+import org.x00hero.Menu.MenuController;
 import org.x00hero.Menu.MenuItem;
 import org.x00hero.Menu.NavigationItem;
 
@@ -20,7 +19,6 @@ public abstract class Page {
     protected boolean allowAddition = true, allowRemoval = true;
     protected String title;
     protected List<MenuItem> items;
-    protected List<NavigationItem> navItems = new ArrayList<>();
     protected int biggestSlot;
     protected int slots = MIN_SLOTS;
     protected final int number;
@@ -74,9 +72,30 @@ public abstract class Page {
         updateBiggest(menuItem.getSlot());
         return menuItem;
     }
+    public NavigationItem addItem(NavigationItem navItem) {
+        MenuItem menuItem = addItem((MenuItem) navItem);
+        return menuItem instanceof NavigationItem ? (NavigationItem) menuItem : null;
+    }
+    public void setItem(MenuItem menuItem) { setItem(menuItem, menuItem.getSlot()); }
+    public void setItem(MenuItem menuItem, int slot) {
+        items.set(slot, menuItem);
+        updateBiggest(slot);
+    }
     public void removeItem(int slot) { items.removeIf(item -> item.getSlot() == slot); }
     public void removeItem(MenuItem menuItem) { items.remove(menuItem); }
 
+    private boolean slotItem(MenuItem menuItem) {
+        if(menuItem.isUnslotted()) menuItem.setSlot(getAvailableSlot(menuItem));
+        if(!isValidSlot(menuItem.getSlot()) && allowAddition) return false;
+        items.add(menuItem);
+        return true;
+    }
+
+    public boolean isLastPage() { return menu == null || menu.isLastPage(number); }
+    public boolean isFirstPage() { return menu == null || menu.isFirstPage(number); }
+    public boolean isOnlyPage() { return menu == null || menu.isOnlyPage(number); }
+    public boolean hasNextPage() { return menu != null && menu.hasNextPage(number); }
+    public boolean isInitialPage() { return false; }
     public boolean isValidSlot(int slot) { return slot >= MIN_SLOTS - 1 && slot <= slots; }
     public boolean isFull() { return items.size() >= slots; }
     public Menu getMenu() { return menu; }
@@ -87,11 +106,9 @@ public abstract class Page {
     public Inventory getInventory() { return inventory; }
     public abstract Inventory createInventory();
     public void setItems(List<MenuItem> items) { this.items = items; }
-    public void setNavItems(List<NavigationItem> navItems) { this.navItems = navItems; }
     public MenuItem getItem(ItemStack itemStack) { for(MenuItem item : items) if(item.equals(itemStack)) return item; return null; }
     public MenuItem getItem(int slot) { for(MenuItem item : items) if(item.getSlot() == slot) return item; return null; }
     public List<MenuItem> getItems() { return items; }
-    public List<NavigationItem> getNavItems() { return navItems; }
     public void open(Player player) { MenuController.openPage(player, this); }
 
     public int getNumber() { return number; }

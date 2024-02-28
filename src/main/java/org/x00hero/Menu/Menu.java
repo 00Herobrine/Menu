@@ -71,4 +71,8 @@ public class Menu extends HashMap<Integer, Page> {
 
     public void open(Player player) { open(player, 0); }
     public void open(Player player, int page) { tryGetPage(page).open(player); }
+    public boolean isFirstPage(int page) { return page == 0; }
+    public boolean isLastPage(int page) { return page == size() - 1; }
+    public boolean isOnlyPage(int page) { return size() == 1; }
+    public boolean hasNextPage(int number) { return size() - 1 > number || get(number + 1) != null; }
 }

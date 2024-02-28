@@ -1,4 +1,4 @@
-package org.x00hero;
+package org.x00hero.Menu;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -15,12 +15,10 @@ import org.bukkit.inventory.ItemStack;
 import org.x00hero.Menu.Events.Item.MenuItemAddEvent;
 import org.x00hero.Menu.Events.Item.MenuItemClickEvent;
 import org.x00hero.Menu.Events.Item.MenuItemRemoveEvent;
-import org.x00hero.Menu.Events.Item.MenuItemSwapEvent;
+import org.x00hero.Menu.Events.Item.NavigationItemClickEvent;
 import org.x00hero.Menu.Events.Menu.MenuClickEvent;
 import org.x00hero.Menu.Events.Menu.MenuCloseEvent;
 import org.x00hero.Menu.Events.Menu.MenuOpenEvent;
-import org.x00hero.Menu.Menu;
-import org.x00hero.Menu.MenuItem;
 import org.x00hero.Menu.Pages.Page;
 
 import java.util.HashMap;
@@ -39,7 +37,6 @@ public class MenuController implements Listener {
     @EventHandler
     public void InventoryHandler(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
-        int clickedRawSlot = e.getRawSlot();
         int clickedSlot = e.getSlot();
         ItemStack clicked = e.getCurrentItem();
         ItemStack cursor = e.getCursor();
@@ -54,7 +51,8 @@ public class MenuController implements Listener {
         MenuItem clickedItem = null;
         if(clickedMenu) {
             clickedItem = page.getItem(clicked);
-            CallEvent(new MenuItemClickEvent(player, clickedItem, page, e));
+            if(clickedItem instanceof NavigationItem navItem) CallEvent(new NavigationItemClickEvent(player, navItem, page, e));
+            else CallEvent(new MenuItemClickEvent(player, clickedItem, page, e));
         }
         switch(action) {
             case PLACE_ONE, PLACE_SOME, PLACE_ALL -> {

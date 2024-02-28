@@ -17,8 +17,6 @@ public class FixedPage extends Page {
         else inventory = Bukkit.createInventory(null, slots, title);
         for(MenuItem item : items)
             inventory.setItem(item.getSlot(), item);
-        for(NavigationItem navItem : navItems)
-            inventory.setItem(navItem.getSlot(), navItem);
         return inventory;
     }
 }
