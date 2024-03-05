@@ -6,21 +6,34 @@ import org.bukkit.inventory.ItemStack;
 
 public class NavigationItem extends MenuItem {
     protected boolean navToPage = false;
-    public static NavigationItem backItem = new NavigationItem(new MenuItem(Material.ORANGE_STAINED_GLASS_PANE, "&eBack"), 45,1);
-    public static NavigationItem forwardItem = new NavigationItem(new MenuItem(Material.LIME_STAINED_GLASS_PANE, "&aForward"), 53, 1);
+    public static NavigationItem backItem = new NavigationItem(Material.ORANGE_STAINED_GLASS_PANE, "&eBack", 45,1);
+    public static NavigationItem forwardItem = new NavigationItem(Material.LIME_STAINED_GLASS_PANE, "&aForward", 53, 1);
+    protected int intendedSlot;
     protected int amount = 1;
 
     public NavigationItem(Material material, int slot, int navAmount) {
-        super(material, slot);
+        super(material, 1, slot);
         this.amount = navAmount;
         isCancelClick = true;
     }
     public NavigationItem(Material material, int slot, int navAmount, boolean navToPage) {
-        super(material, slot);
+        super(material, 1, slot);
         this.amount = navAmount;
         this.navToPage = navToPage;
         isCancelClick = true;
     }
+    public NavigationItem(Material material, String name, int slot, int navAmount) {
+        super(material, 1, slot, name);
+        this.amount = navAmount;
+        isCancelClick = true;
+    }
+    public NavigationItem(Material material, String name, int navAmount, int slot, boolean navToPage) {
+        super(material, 1, slot, name);
+        this.amount = navAmount;
+        this.navToPage = navToPage;
+        isCancelClick = true;
+    }
+/*
     public NavigationItem(ItemStack itemStack, int slot, int navAmount) {
         super(itemStack);
         this.slot = slot;
@@ -41,6 +54,7 @@ public class NavigationItem extends MenuItem {
         this.amount = navAmount;
         this.navToPage = navToPage;
     }
+*/
 
     public void navigate(Player player) {
         Menu menu = page.getMenu();

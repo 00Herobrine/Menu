@@ -17,6 +17,7 @@ public class MenuClickEvent extends InventoryClickEvent implements Cancellable {
     public final MenuItem clickedItem;
     public final MenuItem heldItem;
     private static final HandlerList handlerList = new HandlerList();
+    protected InventoryClickEvent event;
 
     public MenuClickEvent(Player player, Page page, MenuItem clickedItem, ItemStack heldItem, InventoryClickEvent event) {
         super(event.getView(), event.getSlotType(), event.getSlot(), event.getClick(), event.getAction(), event.getHotbarButton());
@@ -25,6 +26,7 @@ public class MenuClickEvent extends InventoryClickEvent implements Cancellable {
         this.menu = page.getMenu();
         this.clickedItem = clickedItem != null && clickedItem.getType() != Material.AIR ? new MenuItem(clickedItem, event.getSlot()) : null;
         this.heldItem = heldItem != null && heldItem.getType() != Material.AIR ? new MenuItem(heldItem, event.getSlot()) : null;
+        this.event = event;
     }
 
     public Player getPlayer() { return player; }

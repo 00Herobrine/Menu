@@ -19,7 +19,7 @@ public class DynamicPage extends Page {
         if(type != InventoryType.CHEST) inventory = Bukkit.createInventory(null, getType(), getTitle());
         else inventory = Bukkit.createInventory(null, getAdjustedAmount(biggestSlot), getTitle());
         for(MenuItem item : items)
-            inventory.setItem(item.getSlot(), item);
+            if(item.isVisible()) inventory.setItem(item.getSlot(), item);
         return inventory;
     }
 }

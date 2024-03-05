@@ -74,5 +74,6 @@ public class Menu extends HashMap<Integer, Page> {
     public boolean isFirstPage(int page) { return page == 0; }
     public boolean isLastPage(int page) { return page == size() - 1; }
     public boolean isOnlyPage(int page) { return size() == 1; }
-    public boolean hasNextPage(int number) { return size() - 1 > number || get(number + 1) != null; }
+    public boolean hasNextPage(int page) { return size() - 1 > page || get(page + 1) != null; }
+    public boolean hasPreviousPage(int page) { return page - 1 > 0 || get(page - 1) != null; }
 }

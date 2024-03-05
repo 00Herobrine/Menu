@@ -55,24 +55,33 @@ public class MenuItem extends ItemStack {
     }
     public MenuItem(Material material) { super(material); }
     public MenuItem(Material material, int amount) { super(material, amount); }
-    public MenuItem(Material material, String name) {
-        super(material);
+    public MenuItem(Material material, int amount, int slot) {
+        super(material, amount);
+        this.slot = slot;
+    }
+    public MenuItem(Material material, int amount, int slot, String name) {
+        super(material, amount);
+        this.slot = slot;
         setName(name);
     }
     public MenuItem(Material material, int amount, String name) {
         super(material, amount);
         setName(name);
     }
-    public MenuItem(Material material, String name, String lore) {
-        super(material);
-        setName(name);
-        setLore(lore);
-    }
     public MenuItem(Material material, int amount, String name, String lore) {
         super(material, amount);
         setName(name);
         setLore(lore);
         setCustomData(Config.getMenuItemKey(), PersistentDataType.STRING, Validator.encode(Config.getMenuItemString()));
+    }
+    public MenuItem(Material material, String name) {
+        super(material);
+        setName(name);
+    }
+    public MenuItem(Material material, String name, String lore) {
+        super(material);
+        setName(name);
+        setLore(lore);
     }
     public Object getCustomData(NamespacedKey key, PersistentDataType type) { return getItemMeta().getPersistentDataContainer().getOrDefault(key, type, "1"); }
     public void setCustomData(NamespacedKey key, PersistentDataType type, Object input) { setCustomData(this, key, type, input); }
@@ -99,6 +108,7 @@ public class MenuItem extends ItemStack {
     public boolean isCancelClick() { return isCancelClick; }
     public void setCancelClick(boolean cancelClick) { isCancelClick = cancelClick; }
 
+    public boolean isVisible() { return isSlotted() && isEnabled; }
     public boolean isEnabled() { return isEnabled; }
-    public boolean isUnslotted() { return slot == -1; }
+    public boolean isSlotted() { return slot != UNPAGED_SLOT; }
 }

@@ -19,7 +19,7 @@ public abstract class Page {
     protected boolean allowAddition = true, allowRemoval = true;
     protected String title;
     protected List<MenuItem> items;
-    protected int biggestSlot;
+    protected int biggestSlot = MIN_SLOTS;
     protected int slots = MIN_SLOTS;
     protected final int number;
     protected final InventoryType type;
@@ -33,12 +33,14 @@ public abstract class Page {
         this.number = pageNumber;
         this.items = new ArrayList<>();
         this.type = InventoryType.CHEST;
+        setDefaultNavItems();
     }
     public Page(int pageNumber, String title) {
         this.number = pageNumber;
         this.items = new ArrayList<>();
         this.type = InventoryType.CHEST;
         setTitle(title);
+        setDefaultNavItems();
     }
 
     public Page(int pageNumber, InventoryType type) {
@@ -46,12 +48,14 @@ public abstract class Page {
         this.items = new ArrayList<>();
         this.type = type;
         setSlots(type.getDefaultSize());
+        setDefaultNavItems();
     }
     public Page(int pageNumber, int slots) {
         this.number = pageNumber;
         this.items = new ArrayList<>();
         this.type = InventoryType.CHEST;
         setSlots(slots);
+        setDefaultNavItems();
     }
     public Page(int pageNumber, int slots, String title) {
         this.number = pageNumber;
@@ -59,33 +63,45 @@ public abstract class Page {
         this.type = InventoryType.CHEST;
         setSlots(slots);
         setTitle(title);
+        setDefaultNavItems();
     }
 
     public MenuItem addItem(ItemStack itemStack) { return addItem(itemStack, MenuItem.UNPAGED_SLOT); }
     public MenuItem addItem(ItemStack itemStack, int slot) { return addItem(new MenuItem(itemStack, slot)); }
     public MenuItem addItem(MenuItem menuItem, int slot) { return addItem(new MenuItem(menuItem, slot)); }
     public MenuItem addItem(MenuItem menuItem) {
-        if(menuItem.isUnslotted()) menuItem.setSlot(getAvailableSlot(menuItem));
+        if(!menuItem.isSlotted()) menuItem.setSlot(getAvailableSlot(menuItem));
         if(!isValidSlot(menuItem.getSlot()) && allowAddition) return null;
         if(items.contains(menuItem)) Bukkit.broadcastMessage("Similar");
         items.add(menuItem);
-        updateBiggest(menuItem.getSlot());
+        updateBiggest(menuItem);
         return menuItem;
     }
-    public NavigationItem addItem(NavigationItem navItem) {
+/*    public NavigationItem addItem(NavigationItem navItem) {
         MenuItem menuItem = addItem((MenuItem) navItem);
         return menuItem instanceof NavigationItem ? (NavigationItem) menuItem : null;
-    }
-    public void setItem(MenuItem menuItem) { setItem(menuItem, menuItem.getSlot()); }
-    public void setItem(MenuItem menuItem, int slot) {
-        items.set(slot, menuItem);
+    }*/
+/*    public MenuItem setNavItem(NavigationItem navItem, int slot) {
+        setItem(navItem);
+        return items.set(slot, navItem);
+    }*/
+    public MenuItem setItem(MenuItem menuItem) { return setItem(menuItem, menuItem.getSlot()); }
+    public MenuItem setItem(MenuItem menuItem, int slot) { // Returns old item at slot
+        menuItem.setSlot(slot);
+        Bukkit.broadcastMessage("Setting " + menuItem.getName() + " @ " + slot);
+        for(int i = 0; i < items.size(); i++) {
+            MenuItem item = items.get(i);
+            if(item.getSlot() == slot) return items.set(i, menuItem);
+        }
+        items.add(menuItem);
         updateBiggest(slot);
+        return null;
     }
     public void removeItem(int slot) { items.removeIf(item -> item.getSlot() == slot); }
     public void removeItem(MenuItem menuItem) { items.remove(menuItem); }
 
     private boolean slotItem(MenuItem menuItem) {
-        if(menuItem.isUnslotted()) menuItem.setSlot(getAvailableSlot(menuItem));
+        if(!menuItem.isSlotted()) menuItem.setSlot(getAvailableSlot(menuItem));
         if(!isValidSlot(menuItem.getSlot()) && allowAddition) return false;
         items.add(menuItem);
         return true;
@@ -95,6 +111,12 @@ public abstract class Page {
     public boolean isFirstPage() { return menu == null || menu.isFirstPage(number); }
     public boolean isOnlyPage() { return menu == null || menu.isOnlyPage(number); }
     public boolean hasNextPage() { return menu != null && menu.hasNextPage(number); }
+    public boolean hasPreviousPage() { return menu != null && menu.hasPreviousPage(number); }
+
+    protected void setDefaultNavItems() {
+        setItem(NavigationItem.backItem);
+        setItem(NavigationItem.forwardItem);
+    }
     public boolean isInitialPage() { return false; }
     public boolean isValidSlot(int slot) { return slot >= MIN_SLOTS - 1 && slot <= slots; }
     public boolean isFull() { return items.size() >= slots; }
@@ -115,11 +137,13 @@ public abstract class Page {
     public static int getAdjustedAmount(Integer slots) { return (int) (Math.ceil((double) Math.max(slots, 1) / 9)) * 9; }
     public int getSlots() { return slots; }
     public void setSlots(int slots) {
+        items.add(NavigationItem.backItem);
         if (slots < MIN_SLOTS || slots > MAX_SLOTS)
             throw new IllegalArgumentException("Invalid number of slots. Slots must be between " + MIN_SLOTS + " and " + MAX_SLOTS + ".");
         this.slots = slots;
     }
     //public void setSlots(int slots) { this.slots = Math.max(MIN_SLOTS, Math.min(MAX_SLOTS, slots)); }
+    private void updateBiggest(MenuItem menuItem) { updateBiggest(menuItem.getSlot()); }
     private void updateBiggest(int slot) { if(biggestSlot < slot) biggestSlot = slot; }
     public int getBiggestSlot() { return biggestSlot; }
     public boolean isAvailableSlot(int slot) {

@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -21,10 +22,13 @@ import org.x00hero.Menu.Events.Menu.MenuCloseEvent;
 import org.x00hero.Menu.Events.Menu.MenuOpenEvent;
 import org.x00hero.Menu.Pages.Page;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class MenuController implements Listener {
+    public static int PLAYER_INVENTORY_SIZE = 36;
     private static HashMap<UUID, Page> inMenus = new HashMap<>();
     public static void openPage(Player player, Page page) {
         UUID uuid = player.getUniqueId();
@@ -51,7 +55,11 @@ public class MenuController implements Listener {
         MenuItem clickedItem = null;
         if(clickedMenu) {
             clickedItem = page.getItem(clicked);
-            if(clickedItem instanceof NavigationItem navItem) CallEvent(new NavigationItemClickEvent(player, navItem, page, e));
+            if(clickedItem instanceof NavigationItem navItem) {
+                CallEvent(new NavigationItemClickEvent(player, navItem, page, e));
+                CallEvent(new MenuClickEvent(player, page, clickedItem, cursor, e));
+                return;
+            }
             else CallEvent(new MenuItemClickEvent(player, clickedItem, page, e));
         }
         switch(action) {
@@ -60,19 +68,20 @@ public class MenuController implements Listener {
                 MenuItem menuItem = page.addItem(cursor, clickedSlot);
                 if(menuItem != null) CallEvent(new MenuItemAddEvent(player, menuItem, page, e));
             }
-            case PICKUP_ALL -> {
-                if(!clickedMenu) return;
-                CallEvent(new MenuItemRemoveEvent(player, clickedItem, page, e));
-                page.removeItem(clickedItem);
-            }
             case MOVE_TO_OTHER_INVENTORY -> {
                 if(clickedMenu) {
+                    if(!hasAvailableSlot(player.getInventory(), clickedItem)) return;
                     CallEvent(new MenuItemRemoveEvent(player, clickedItem, page, e));
                     page.removeItem(clickedItem);
                 } else {
                     MenuItem menuItem = page.addItem(clicked);
                     if(menuItem != null) CallEvent(new MenuItemAddEvent(player, menuItem, page, e));
                 }
+            }
+            case PICKUP_ALL -> {
+                if(!clickedMenu) return;
+                CallEvent(new MenuItemRemoveEvent(player, clickedItem, page, e));
+                page.removeItem(clickedItem);
             }
         }
         CallEvent(new MenuClickEvent(player, page, clickedItem, cursor, e));
@@ -94,6 +103,20 @@ public class MenuController implements Listener {
         if(inMenu(playerID)) removeInMenu(playerID);
     }
 
+    public static boolean hasAvailableSlot(Inventory inventory, ItemStack item) {
+        int freeSlot = -1;
+        List<ItemStack> similar = new ArrayList<>();
+        int slots = inventory.getType() == InventoryType.PLAYER ? PLAYER_INVENTORY_SIZE : inventory.getSize();
+        for(int i = 0; i < slots; i++) {
+            ItemStack itemStack = inventory.getItem(i);
+            if(itemStack == null) {
+                if(freeSlot == -1) freeSlot = i;
+            } else if(item.isSimilar(itemStack))
+                if(itemStack.getAmount() < itemStack.getMaxStackSize())
+                    similar.add(itemStack);
+        }
+        return freeSlot != -1 || !similar.isEmpty();
+    }
     public static Page getPage(UUID uuid) { return inMenus.get(uuid); }
     public static Page getPage(Player player) { return getPage(player.getUniqueId()); }
     public static Inventory getInventory(UUID uuid) { return getPage(uuid).getInventory(); }
