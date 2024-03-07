@@ -55,7 +55,7 @@ public class Menu extends HashMap<Integer, Page> {
     public MenuItem addItem(ItemStack itemStack) { return addItem(new MenuItem(itemStack)); }
     public MenuItem addItem(ItemStack itemStack, int slot) { return addItem(new MenuItem(itemStack, slot)); }
     public MenuItem addItem(MenuItem menuItem) { return addItem(menuItem, getAvailablePage()); }
-    public MenuItem addItem(MenuItem menuItem, Page page) { return page.addItem(menuItem); }
+    public MenuItem addItem(MenuItem menuItem, Page page) { updateNavItems(); return page.addItem(menuItem); }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -76,4 +76,13 @@ public class Menu extends HashMap<Integer, Page> {
     public boolean isOnlyPage(int page) { return size() == 1; }
     public boolean hasNextPage(int page) { return size() - 1 > page || get(page + 1) != null; }
     public boolean hasPreviousPage(int page) { return page - 1 > 0 || get(page - 1) != null; }
+    private void updateNavItems() { for(Page page : values()) updateNavItems(page); }
+    private void updateNavItems(Page page) { page.setDefaultNavItems(); }
+
+    public Page getNextPage(Page page) { return getNextPage(page.getNumber()); }
+    public Page getNextPage(int page) { return get(page + 1); }
+
+    public Page getPreviousPage(Page page) { return getPreviousPage(page.getNumber()); }
+    public Page getPreviousPage(int page) { return get(page - 1); }
+
 }

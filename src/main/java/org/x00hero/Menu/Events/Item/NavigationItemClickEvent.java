@@ -23,6 +23,7 @@ public class NavigationItemClickEvent extends MenuClickEvent implements Cancella
         event.setCancelled(!toCancel);
     }
 
+    public int getNavAmount() { return event.isShiftClick() ? navigationItem.getShiftAmount() : navigationItem.getNavAmount(); }
     public NavigationItem getNavigationItem() { return navigationItem; }
 
     @Override

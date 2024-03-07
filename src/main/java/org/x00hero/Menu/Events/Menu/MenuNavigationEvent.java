@@ -5,16 +5,17 @@ import org.bukkit.event.Cancellable;
 import org.x00hero.Menu.Pages.Page;
 
 public class MenuNavigationEvent extends MenuEvent implements Cancellable {
-    public final Player player;
+    public int navAmount;
     public final Page initialPage;
     private boolean isCancelled;
 
     public MenuNavigationEvent(Player player, Page initialPage, Page navigatedPage) {
         super(player, navigatedPage);
-        this.player = player;
         this.initialPage = initialPage;
+        this.navAmount = initialPage.getNumber() - navigatedPage.getNumber();
     }
 
+    public int getNavAmount() { return navAmount; }
     public Page getInitialPage() { return initialPage; }
     @Override
     public boolean isCancelled() { return isCancelled; }

@@ -19,6 +19,7 @@ import org.x00hero.Menu.Events.Item.MenuItemRemoveEvent;
 import org.x00hero.Menu.Events.Item.NavigationItemClickEvent;
 import org.x00hero.Menu.Events.Menu.MenuClickEvent;
 import org.x00hero.Menu.Events.Menu.MenuCloseEvent;
+import org.x00hero.Menu.Events.Menu.MenuNavigationEvent;
 import org.x00hero.Menu.Events.Menu.MenuOpenEvent;
 import org.x00hero.Menu.Pages.Page;
 
@@ -32,10 +33,14 @@ public class MenuController implements Listener {
     private static HashMap<UUID, Page> inMenus = new HashMap<>();
     public static void openPage(Player player, Page page) {
         UUID uuid = player.getUniqueId();
-        inMenus.remove(uuid);
-        inMenus.put(uuid, page);
-        CallEvent(new MenuOpenEvent(player, page));
+        Page initialPage = inMenus.get(uuid);
+        Menu menu = null;
+        if(initialPage != null) menu = initialPage.getMenu();
+        if(menu != null && menu == page.getMenu()) CallEvent(new MenuNavigationEvent(player, initialPage, page));
+        else CallEvent(new MenuOpenEvent(player, page));
+        //inMenus.remove(uuid);
         player.openInventory(page.createInventory());
+        inMenus.put(uuid, page);
     }
 
     @EventHandler
@@ -57,6 +62,7 @@ public class MenuController implements Listener {
             clickedItem = page.getItem(clicked);
             if(clickedItem instanceof NavigationItem navItem) {
                 CallEvent(new NavigationItemClickEvent(player, navItem, page, e));
+                navItem.navigate(player, e.isShiftClick());
                 CallEvent(new MenuClickEvent(player, page, clickedItem, cursor, e));
                 return;
             }
@@ -64,9 +70,10 @@ public class MenuController implements Listener {
         }
         switch(action) {
             case PLACE_ONE, PLACE_SOME, PLACE_ALL -> {
-                if(!clickedMenu) return;
-                MenuItem menuItem = page.addItem(cursor, clickedSlot);
-                if(menuItem != null) CallEvent(new MenuItemAddEvent(player, menuItem, page, e));
+                MenuItem menuItem = new MenuItem(cursor, clickedSlot);
+                menuItem.setPage(page);
+                page.setItem(menuItem);
+                CallEvent(new MenuItemAddEvent(player, menuItem, page, e));
             }
             case MOVE_TO_OTHER_INVENTORY -> {
                 if(clickedMenu) {

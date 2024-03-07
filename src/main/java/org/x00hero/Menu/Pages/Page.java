@@ -73,39 +73,27 @@ public abstract class Page {
         if(!menuItem.isSlotted()) menuItem.setSlot(getAvailableSlot(menuItem));
         if(!isValidSlot(menuItem.getSlot()) && allowAddition) return null;
         if(items.contains(menuItem)) Bukkit.broadcastMessage("Similar");
-        items.add(menuItem);
-        updateBiggest(menuItem);
+        addItemInternally(menuItem);
         return menuItem;
     }
-/*    public NavigationItem addItem(NavigationItem navItem) {
-        MenuItem menuItem = addItem((MenuItem) navItem);
-        return menuItem instanceof NavigationItem ? (NavigationItem) menuItem : null;
-    }*/
-/*    public MenuItem setNavItem(NavigationItem navItem, int slot) {
-        setItem(navItem);
-        return items.set(slot, navItem);
-    }*/
+    private void addItemInternally(MenuItem menuItem) {
+        menuItem.setPage(this);
+        items.add(menuItem);
+        updateBiggest(menuItem);
+    }
     public MenuItem setItem(MenuItem menuItem) { return setItem(menuItem, menuItem.getSlot()); }
     public MenuItem setItem(MenuItem menuItem, int slot) { // Returns old item at slot
         menuItem.setSlot(slot);
-        Bukkit.broadcastMessage("Setting " + menuItem.getName() + " @ " + slot);
+        menuItem.setPage(this);
         for(int i = 0; i < items.size(); i++) {
             MenuItem item = items.get(i);
             if(item.getSlot() == slot) return items.set(i, menuItem);
         }
-        items.add(menuItem);
-        updateBiggest(slot);
+        addItemInternally(menuItem);
         return null;
     }
     public void removeItem(int slot) { items.removeIf(item -> item.getSlot() == slot); }
     public void removeItem(MenuItem menuItem) { items.remove(menuItem); }
-
-    private boolean slotItem(MenuItem menuItem) {
-        if(!menuItem.isSlotted()) menuItem.setSlot(getAvailableSlot(menuItem));
-        if(!isValidSlot(menuItem.getSlot()) && allowAddition) return false;
-        items.add(menuItem);
-        return true;
-    }
 
     public boolean isLastPage() { return menu == null || menu.isLastPage(number); }
     public boolean isFirstPage() { return menu == null || menu.isFirstPage(number); }
@@ -113,10 +101,6 @@ public abstract class Page {
     public boolean hasNextPage() { return menu != null && menu.hasNextPage(number); }
     public boolean hasPreviousPage() { return menu != null && menu.hasPreviousPage(number); }
 
-    protected void setDefaultNavItems() {
-        setItem(NavigationItem.backItem);
-        setItem(NavigationItem.forwardItem);
-    }
     public boolean isInitialPage() { return false; }
     public boolean isValidSlot(int slot) { return slot >= MIN_SLOTS - 1 && slot <= slots; }
     public boolean isFull() { return items.size() >= slots; }
@@ -132,12 +116,15 @@ public abstract class Page {
     public MenuItem getItem(int slot) { for(MenuItem item : items) if(item.getSlot() == slot) return item; return null; }
     public List<MenuItem> getItems() { return items; }
     public void open(Player player) { MenuController.openPage(player, this); }
+    public void setDefaultNavItems() {
+        if(hasPreviousPage()) setItem(NavigationItem.backItem);
+        if(hasNextPage()) setItem(NavigationItem.forwardItem);
+    }
 
     public int getNumber() { return number; }
     public static int getAdjustedAmount(Integer slots) { return (int) (Math.ceil((double) Math.max(slots, 1) / 9)) * 9; }
     public int getSlots() { return slots; }
     public void setSlots(int slots) {
-        items.add(NavigationItem.backItem);
         if (slots < MIN_SLOTS || slots > MAX_SLOTS)
             throw new IllegalArgumentException("Invalid number of slots. Slots must be between " + MIN_SLOTS + " and " + MAX_SLOTS + ".");
         this.slots = slots;
@@ -177,4 +164,7 @@ public abstract class Page {
             if(isAvailableSlot(i, taken)) return i;
         return MenuItem.UNPAGED_SLOT;
     }
+
+    public Page getNextPage() { return menu != null ? menu.getNextPage(this) : null; }
+    public Page getPreviousPage() { return menu != null ? menu.getPreviousPage(this) : null; }
 }

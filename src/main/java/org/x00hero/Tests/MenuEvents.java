@@ -29,11 +29,11 @@ public class MenuEvents implements Listener {
 
     @EventHandler
     public void NavigationClick(NavigationItemClickEvent e) {
-        e.getPlayer().sendMessage("NavItem Clicked " + e.getNavigationItem().getName());
+        e.getPlayer().sendMessage("NavItem Clicked " + e.getNavigationItem().getName() + " NavAmount: " + e.getNavAmount());
     }
     @EventHandler
     public void MenuNavigation(MenuNavigationEvent e) {
-        e.getPlayer().sendMessage("Opened " + e.getPage().getNumber() + " from " + e.getInitialPage().getNumber());
+        e.getPlayer().sendMessage("Opened " + e.getPage().getNumber() + " from " + e.getInitialPage().getNumber() + " NavAmount: " + e.getNavAmount());
     }
     @EventHandler
     public void MenuClick(MenuClickEvent e) {
