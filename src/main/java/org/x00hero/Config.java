@@ -3,12 +3,14 @@ package org.x00hero;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 import static org.x00hero.Main.plugin;
 
 public class Config {
-    private static String secret;
+    private static byte[] secret;
     private static int byteCount;
     private static String NavItemString;
     private static String MenuItemString;
@@ -17,7 +19,7 @@ public class Config {
     private static byte[] publicKey;
 
     public static int getByteCount() { return byteCount; }
-    public static String getSecret() { return secret; }
+    protected static byte[] getSecret() { return secret; }
     public static byte[] getPublicKey() { return publicKey; }
     public static String getMenuItemString() { return MenuItemString; }
     public static String getNavItemString() { return NavItemString; }
@@ -31,7 +33,18 @@ public class Config {
         NavItemKey = new NamespacedKey(plugin, NavItemString);
         MenuItemKey = new NamespacedKey(plugin, MenuItemString);
         byteCount = config.getInt("bytes");
-        secret = config.getString("secret-key");
+        //secret = config.getByteList("secret-key");
         publicKey = Base64.getDecoder().decode(secret);
+    }
+
+    private void generateAndSave() {
+        FileConfiguration config = plugin.getConfig();
+        if (!config.contains("secret-key") || config.getString("secret-key").equalsIgnoreCase("")) {
+            byte[] keyBytes = new byte[config.getInt("bytes")];
+            new SecureRandom().nextBytes(keyBytes);
+            String base64Key = Base64.getEncoder().encodeToString(keyBytes);
+            config.set("secret-key", base64Key);
+            plugin.saveConfig();
+        }
     }
 }

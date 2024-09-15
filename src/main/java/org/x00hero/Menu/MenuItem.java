@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MenuItem extends ItemStack {
+public class MenuItem extends ItemStack implements Cloneable {
     public static final int UNPAGED_SLOT = -1;
     protected int slot = UNPAGED_SLOT;
     protected int intendedSlot = UNPAGED_SLOT;
-    protected boolean isEnabled = true, isCancelClick = false, dynamic = false;
+    protected boolean isEnabled = true, isCancelClick = false, isDynamic = false;
     protected Page page;
     protected String ID;
     protected static final String Key = "MenuItem";
@@ -37,7 +37,7 @@ public class MenuItem extends ItemStack {
         this.isCancelClick = menuItem.isCancelClick;
         this.page = menuItem.page;
         this.ID = menuItem.ID;
-        this.dynamic = menuItem.dynamic;
+        this.isDynamic = menuItem.isDynamic;
     }
     public MenuItem(MenuItem menuItem, int slot) {
         super(menuItem);
@@ -47,7 +47,7 @@ public class MenuItem extends ItemStack {
         this.isCancelClick = menuItem.isCancelClick;
         this.page = menuItem.page;
         this.ID = menuItem.ID;
-        this.dynamic = menuItem.dynamic;
+        this.isDynamic = menuItem.isDynamic;
     }
     public MenuItem(ItemStack itemStack, int slot) {
         super(itemStack);
@@ -111,4 +111,19 @@ public class MenuItem extends ItemStack {
     public boolean isVisible() { return isSlotted() && isEnabled; }
     public boolean isEnabled() { return isEnabled; }
     public boolean isSlotted() { return slot != UNPAGED_SLOT; }
+
+    @Override
+    public MenuItem clone() {
+        MenuItem clone = (MenuItem) super.clone();
+        // TODO: copy mutable state here, so the clone can't change the internals of the original
+        clone.slot = slot;
+        clone.intendedSlot = intendedSlot;
+        clone.page = page;
+        clone.ID = ID;
+        clone.isEnabled = isEnabled;
+        clone.isCancelClick = isCancelClick;
+        clone.isDynamic = isDynamic;
+        clone.setName(getName());
+        return clone;
+    }
 }

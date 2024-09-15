@@ -4,11 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.x00hero.Menu.Pages.Page;
 
-public class NavigationItem extends MenuItem {
+public class NavigationItem extends MenuItem implements Cloneable {
     protected boolean navToPage = false;
-    public static NavigationItem backItem = new NavigationItem(Material.ORANGE_STAINED_GLASS_PANE, "&eBack", 45,-1, -5);
-    public static NavigationItem forwardItem = new NavigationItem(Material.LIME_STAINED_GLASS_PANE, "&aForward", 53, 1, 5);
-    protected int intendedSlot;
     protected int shiftAmount = 5;
     protected int navAmount = 1;
 
@@ -65,5 +62,15 @@ public class NavigationItem extends MenuItem {
         int navAmount = isShift ? shiftAmount : this.navAmount;
         if(navToPage) menu.open(player, Math.max(0, Math.min(navAmount, menu.getMaxPages())));
         else menu.open(player, Math.max(0, Math.min(page.getNumber() + navAmount, menu.getMaxPages())));
+    }
+
+    @Override
+    public NavigationItem clone() {
+        NavigationItem clone = (NavigationItem) super.clone();
+        // TODO: copy mutable state here, so the clone can't change the internals of the original
+        clone.navToPage = navToPage;
+        clone.navAmount = navAmount;
+        clone.shiftAmount = shiftAmount;
+        return clone;
     }
 }

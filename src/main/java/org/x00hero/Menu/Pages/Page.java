@@ -1,6 +1,6 @@
 package org.x00hero.Menu.Pages;
 
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -16,46 +16,55 @@ import java.util.List;
 public abstract class Page {
     public static final int MIN_SLOTS = 1;
     public static final int MAX_SLOTS = 54;
+    public static final NavigationItem BACK_NAV = new NavigationItem(Material.ORANGE_STAINED_GLASS_PANE, "&eBack", 45,-1, -5);
+    public static final NavigationItem FORWARD_NAV = new NavigationItem(Material.LIME_STAINED_GLASS_PANE, "&aForward", 53, 1, 5);
+
+    public final int number;
     protected boolean allowAddition = true, allowRemoval = true;
     protected String title;
     protected List<MenuItem> items;
     protected int biggestSlot = MIN_SLOTS;
     protected int slots = MIN_SLOTS;
-    protected final int number;
     protected final InventoryType type;
     protected Menu menu;
     protected Inventory inventory;
 
-    public static int getMaxSlots() { return MAX_SLOTS; }
-    public static int getMinSlots() { return MIN_SLOTS; }
+    public int getMaxSlots() { return Math.min(biggestSlot, MAX_SLOTS); }
+    public int getMinSlots() { return Math.max(slots, MIN_SLOTS); }
 
     public Page(int pageNumber) {
         this.number = pageNumber;
         this.items = new ArrayList<>();
         this.type = InventoryType.CHEST;
-        setDefaultNavItems();
+        setNavItems();
     }
     public Page(int pageNumber, String title) {
         this.number = pageNumber;
         this.items = new ArrayList<>();
         this.type = InventoryType.CHEST;
         setTitle(title);
-        setDefaultNavItems();
+        setNavItems();
     }
-
     public Page(int pageNumber, InventoryType type) {
         this.number = pageNumber;
         this.items = new ArrayList<>();
         this.type = type;
         setSlots(type.getDefaultSize());
-        setDefaultNavItems();
+        setNavItems();
     }
     public Page(int pageNumber, int slots) {
         this.number = pageNumber;
         this.items = new ArrayList<>();
         this.type = InventoryType.CHEST;
         setSlots(slots);
-        setDefaultNavItems();
+        setNavItems();
+    }
+    public Page(int pageNumber, int slots, Menu menu) {
+        this.number = pageNumber;
+        this.items = new ArrayList<>();
+        this.type = InventoryType.CHEST;
+        this.menu = menu;
+        setSlots(slots);
     }
     public Page(int pageNumber, int slots, String title) {
         this.number = pageNumber;
@@ -63,7 +72,7 @@ public abstract class Page {
         this.type = InventoryType.CHEST;
         setSlots(slots);
         setTitle(title);
-        setDefaultNavItems();
+        setNavItems();
     }
 
     public MenuItem addItem(ItemStack itemStack) { return addItem(itemStack, MenuItem.UNPAGED_SLOT); }
@@ -72,8 +81,19 @@ public abstract class Page {
     public MenuItem addItem(MenuItem menuItem) {
         if(!menuItem.isSlotted()) menuItem.setSlot(getAvailableSlot(menuItem));
         if(!isValidSlot(menuItem.getSlot()) && allowAddition) return null;
-        if(items.contains(menuItem)) Bukkit.broadcastMessage("Similar");
-        addItemInternally(menuItem);
+        if(items.contains(menuItem)) {
+            int index = items.indexOf(menuItem);
+            MenuItem indexedItem = items.get(index);
+            int updatedAmount = indexedItem.getAmount() + menuItem.getAmount();
+            int remainder = updatedAmount - indexedItem.getMaxStackSize();
+            indexedItem.setAmount(Math.min(indexedItem.getMaxStackSize(), updatedAmount));
+            items.set(index, indexedItem);
+            if(remainder > 0) {
+                ItemStack remainderItem = menuItem.clone();
+                remainderItem.setAmount(remainder);
+                if(addItem(remainderItem) == null) return null;
+            }
+        } else addItemInternally(menuItem);
         return menuItem;
     }
     private void addItemInternally(MenuItem menuItem) {
@@ -105,7 +125,6 @@ public abstract class Page {
     public boolean isValidSlot(int slot) { return slot >= MIN_SLOTS - 1 && slot <= slots; }
     public boolean isFull() { return items.size() >= slots; }
     public Menu getMenu() { return menu; }
-    public Page setMenu(Menu menu) { this.menu = menu; return this; }
     public String getTitle() { return title == null ? menu.getTitle() : title; }
     public void setTitle(String title) { this.title = title; }
     public InventoryType getType() { return type; }
@@ -116,9 +135,9 @@ public abstract class Page {
     public MenuItem getItem(int slot) { for(MenuItem item : items) if(item.getSlot() == slot) return item; return null; }
     public List<MenuItem> getItems() { return items; }
     public void open(Player player) { MenuController.openPage(player, this); }
-    public void setDefaultNavItems() {
-        if(hasPreviousPage()) setItem(NavigationItem.backItem);
-        if(hasNextPage()) setItem(NavigationItem.forwardItem);
+    public void setNavItems() {
+        if(hasPreviousPage()) setItem(BACK_NAV.clone());
+        if(hasNextPage()) setItem(FORWARD_NAV.clone());
     }
 
     public int getNumber() { return number; }
