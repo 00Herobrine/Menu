@@ -1,4 +1,4 @@
-package org.x00hero.Menu;
+package org.x00hero.Menu.Items;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,13 +15,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.x00hero.Menu.Menu.UNPAGED_SLOT;
+
 public class MenuItem extends ItemStack implements Cloneable {
-    public static final int UNPAGED_SLOT = -1;
     protected int slot = UNPAGED_SLOT;
     protected int intendedSlot = UNPAGED_SLOT;
     protected boolean isEnabled = true, isCancelClick = false, isDynamic = false;
     protected Page page;
     protected String ID;
+    protected String permission;
     protected static final String Key = "MenuItem";
     public MenuItem() { super(); }
     public MenuItem(ItemStack itemStack) {
@@ -111,6 +113,10 @@ public class MenuItem extends ItemStack implements Cloneable {
     public boolean isVisible() { return isSlotted() && isEnabled; }
     public boolean isEnabled() { return isEnabled; }
     public boolean isSlotted() { return slot != UNPAGED_SLOT; }
+
+    public String getPermission() { return permission; }
+    public void setPermission(String permission) { this.permission = permission; }
+    public boolean hasPermission() { return permission != null; }
 
     @Override
     public MenuItem clone() {

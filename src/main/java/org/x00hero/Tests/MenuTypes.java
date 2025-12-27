@@ -1,6 +1,5 @@
 package org.x00hero.Tests;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -8,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.x00hero.Menu.Menu;
-import org.x00hero.Menu.MenuItem;
+import org.x00hero.Menu.Items.MenuItem;
 
 public class MenuTypes implements Listener, CommandExecutor {
     private static final Menu StoredMenu = new Menu("Stored Menu");

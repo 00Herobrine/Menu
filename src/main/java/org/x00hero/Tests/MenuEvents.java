@@ -20,20 +20,20 @@ public class MenuEvents implements Listener {
     }
     @EventHandler
     public void MenuItemRemove(MenuItemRemoveEvent e) {
-        e.getPlayer().sendMessage("Removed " + e.getMenuItem().getName() + " from " + e.getPage().getNumber());
+        e.getPlayer().sendMessage("Removed " + e.getMenuItem().getName() + " from " + e.getPage().getPageNumber());
     }
     @EventHandler
     public void MenuItemAdd(MenuItemAddEvent e) {
-        e.getPlayer().sendMessage("Added " + e.getMenuItem().getName() + " to " + e.getPage().getNumber());
+        e.getPlayer().sendMessage("Added " + e.getMenuItem().getName() + " to " + e.getPage().getPageNumber());
     }
 
     @EventHandler
     public void NavigationClick(NavigationItemClickEvent e) {
-        e.getPlayer().sendMessage("NavItem Clicked " + e.getNavigationItem().getName() + " NavAmount: " + e.getNavAmount());
+        e.getPlayer().sendMessage("NavItem Clicked " + e.getClickedItem().getName() + " NavAmount: " + e.getNavAmount());
     }
     @EventHandler
     public void MenuNavigation(MenuNavigationEvent e) {
-        e.getPlayer().sendMessage("Opened " + e.getPage().getNumber() + " from " + e.getInitialPage().getNumber() + " NavAmount: " + e.getNavAmount());
+        e.getPlayer().sendMessage("Opened " + e.getPage().getPageNumber() + " from " + e.getInitialPage().getPageNumber() + " NavAmount: " + e.getNavAmount());
     }
     @EventHandler
     public void MenuClick(MenuClickEvent e) {
@@ -41,10 +41,10 @@ public class MenuEvents implements Listener {
     }
     @EventHandler
     public void MenuClose(MenuCloseEvent e) {
-        e.getPlayer().sendMessage("Closed " + e.getMenu().getTitle() + " on " + e.getPage().getNumber());
+        e.getPlayer().sendMessage("Closed " + e.getMenu().getTitle() + " on " + e.getPage().getPageNumber());
     }
     @EventHandler
     public void MenuOpen(MenuOpenEvent e) {
-        e.getPlayer().sendMessage("Opened " + e.getMenu().getTitle() + " on " + e.getPage().getNumber());
+        e.getPlayer().sendMessage("Opened " + e.getMenu().getTitle() + " on " + e.getPage().getPageNumber());
     }
 }

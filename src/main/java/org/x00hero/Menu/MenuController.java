@@ -21,6 +21,9 @@ import org.x00hero.Menu.Events.Menu.MenuClickEvent;
 import org.x00hero.Menu.Events.Menu.MenuCloseEvent;
 import org.x00hero.Menu.Events.Menu.MenuNavigationEvent;
 import org.x00hero.Menu.Events.Menu.MenuOpenEvent;
+import org.x00hero.Menu.Items.MenuItem;
+import org.x00hero.Menu.Items.NavigationItem;
+import org.x00hero.Menu.Pages.APage;
 import org.x00hero.Menu.Pages.Page;
 
 import java.util.ArrayList;
@@ -30,15 +33,16 @@ import java.util.UUID;
 
 public class MenuController implements Listener {
     public static int PLAYER_INVENTORY_SIZE = 36;
-    private static final HashMap<UUID, Page> inMenus = new HashMap<>();
-    public static void openPage(Player player, Page page) {
+    private static final HashMap<UUID, APage> inMenus = new HashMap<>();
+
+    public static void openPage(Player player, APage page) {
         UUID uuid = player.getUniqueId();
-        Page initialPage = inMenus.get(uuid);
+        APage initialPage = inMenus.get(uuid);
         Menu menu = null;
         if(initialPage != null) menu = initialPage.getMenu();
-        if(menu != null && menu == page.getMenu()) CallEvent(new MenuNavigationEvent(player, initialPage, page));
-        else CallEvent(new MenuOpenEvent(player, page));
-        player.openInventory(page.createInventory());
+        if(menu != null && menu == page.getMenu()) CallEvent(new MenuNavigationEvent((InventoryView) player.getInventory(), initialPage, page));
+        else CallEvent(new MenuOpenEvent((InventoryView) player.getInventory(), page));
+        player.openInventory(page.open());
         setInMenu(uuid, page);
     }
 
@@ -51,7 +55,7 @@ public class MenuController implements Listener {
         ItemStack cursor = e.getCursor();
         InventoryView view = e.getView();
         Inventory clickedInventory = e.getClickedInventory();
-        Page page = MenuController.getPage(player);
+        APage page = MenuController.getPage(player);
         Inventory menuInventory = null;
         InventoryAction action = e.getAction();
         if(page != null) menuInventory = page.getInventory();
@@ -64,12 +68,12 @@ public class MenuController implements Listener {
         if(clickedMenu) {
             clickedItem = page.getItem(clicked);
             if(clickedItem instanceof NavigationItem navItem) {
-                CallEvent(new NavigationItemClickEvent(player, navItem, page, e));
-                CallEvent(new MenuClickEvent(player, page, navItem, cursor, e));
+                CallEvent(new NavigationItemClickEvent(e, player, navItem, cursor, page));
+                CallEvent(new MenuClickEvent(e, navItem, cursor, page));
                 navItem.navigate(player, e.isShiftClick());
                 return;
             }
-            else CallEvent(new MenuItemClickEvent(player, clickedItem, page, e));
+            else CallEvent(new MenuItemClickEvent(e, player, clickedItem, cursor, page));
         }
         //endregion
 
@@ -79,27 +83,27 @@ public class MenuController implements Listener {
                 MenuItem menuItem = new MenuItem(cursor, clickedSlot);
                 menuItem.setPage(page);
                 page.setItem(menuItem);
-                CallEvent(new MenuItemAddEvent(player, menuItem, page, e));
+                CallEvent(new MenuItemAddEvent(e.getView(), menuItem, page));
             }
             case MOVE_TO_OTHER_INVENTORY -> {
                 if(clickedMenu) {
                     if(!hasAvailableSlot(player.getInventory(), clickedItem)) return;
-                    CallEvent(new MenuItemRemoveEvent(player, clickedItem, page, e));
+                    CallEvent(new MenuItemRemoveEvent(e.getView(), clickedItem, page));
                     page.removeItem(clickedItem);
                 } else {
                     MenuItem menuItem = page.addItem(clicked);
-                    if(menuItem != null) CallEvent(new MenuItemAddEvent(player, menuItem, page, e));
+                    if(menuItem != null) CallEvent(new MenuItemAddEvent(e.getView(), menuItem, page));
                 }
             }
             case PICKUP_ALL -> {
                 if(!clickedMenu) return;
-                CallEvent(new MenuItemRemoveEvent(player, clickedItem, page, e));
+                CallEvent(new MenuItemRemoveEvent(e.getView(), clickedItem, page));
                 page.removeItem(clickedItem);
             }
         }
         //endregion
 
-        CallEvent(new MenuClickEvent(player, page, clickedItem, cursor, e));
+        CallEvent(new MenuClickEvent(e, clickedItem, cursor, page));
     }
 
     @EventHandler
@@ -109,7 +113,7 @@ public class MenuController implements Listener {
         if(!inMenu(playerID)) return;
         Page page = getPage(playerID);
         removeInMenu(playerID);
-        CallEvent(new MenuCloseEvent(player, page, e));
+        CallEvent(new MenuCloseEvent(e, page));
     }
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
@@ -118,32 +122,32 @@ public class MenuController implements Listener {
     }
 
     public static boolean hasAvailableSlot(Inventory inventory, ItemStack item) {
-        int freeSlot = MenuItem.UNPAGED_SLOT;
+        int freeSlot = Menu.UNPAGED_SLOT;
         List<ItemStack> similar = new ArrayList<>();
         int slots = inventory.getType() == InventoryType.PLAYER ? PLAYER_INVENTORY_SIZE : inventory.getSize();
         for(int i = 0; i < slots; i++) {
             ItemStack itemStack = inventory.getItem(i);
             if(itemStack == null) {
-                if(freeSlot == MenuItem.UNPAGED_SLOT) freeSlot = i;
+                if(freeSlot == Menu.UNPAGED_SLOT) freeSlot = i;
             } else if(item.isSimilar(itemStack))
                 if(itemStack.getAmount() < itemStack.getMaxStackSize())
                     similar.add(itemStack);
         }
-        return freeSlot != MenuItem.UNPAGED_SLOT || !similar.isEmpty();
+        return freeSlot != Menu.UNPAGED_SLOT || !similar.isEmpty();
     }
-    public static Page getPage(UUID uuid) { return inMenus.get(uuid); }
-    public static Page getPage(Player player) { return getPage(player.getUniqueId()); }
+    public static APage getPage(UUID uuid) { return inMenus.get(uuid); }
+    public static APage getPage(Player player) { return getPage(player.getUniqueId()); }
     public static Inventory getInventory(UUID uuid) { return getPage(uuid).getInventory(); }
     public static Inventory getInventory(Player player) { return getInventory(player.getUniqueId()); }
     public static void CallEvent(Event event) { Bukkit.getServer().getPluginManager().callEvent(event); }
-    public static void setInMenu(UUID uuid, Page page) { inMenus.put(uuid, page); }
-    public static void setInMenu(Player player, Page page) { setInMenu(player.getUniqueId(), page); }
+    public static void setInMenu(UUID uuid, APage page) { inMenus.put(uuid, page); }
+    public static void setInMenu(Player player, APage page) { setInMenu(player.getUniqueId(), page); }
     public static void removeInMenu(UUID uuid) { inMenus.remove(uuid); }
     public static void removeInMenu(Player player) { removeInMenu(player.getUniqueId()); }
     public static boolean inMenu(Player player) { return inMenu(player.getUniqueId()); }
     public static boolean inMenu(UUID uuid) { return inMenus.containsKey(uuid); }
     public static boolean inMenu(UUID uuid, Menu menu) {
-        Page page = getPage(uuid);
+        APage page = getPage(uuid);
         return page != null && page.getMenu() == menu;
     }
 

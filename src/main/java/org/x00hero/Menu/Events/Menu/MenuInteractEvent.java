@@ -1,27 +1,27 @@
 package org.x00hero.Menu.Events.Menu;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.inventory.InventoryView;
+import org.x00hero.Menu.Items.MenuItem;
 import org.x00hero.Menu.Menu;
 import org.x00hero.Menu.Pages.Page;
 
-public class MenuEvent extends InventoryEvent {
-    public final Menu menu;
+public class MenuInteractEvent extends InventoryInteractEvent {
+    public final MenuItem clickedItem;
     public final Page page;
+    public final Menu menu;
     public static HandlerList handlerList = new HandlerList();
 
-    public MenuEvent(InventoryView transaction, Page page) {
+    public MenuInteractEvent(InventoryView transaction, MenuItem clickedItem, Page Page) {
         super(transaction);
-        this.page = page;
-        this.menu = page.getMenu();
+        this.clickedItem = clickedItem;
+        page = Page;
+        menu = Page.getMenu();
     }
 
-    public Menu getMenu() { return menu; }
-    public Page getPage() { return page; }
+    public Player getPlayer() { return (Player) getWhoClicked(); }
 
     @Override
     public HandlerList getHandlers() { return handlerList; }

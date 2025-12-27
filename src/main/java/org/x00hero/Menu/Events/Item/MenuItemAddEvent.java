@@ -5,38 +5,29 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.inventory.InventoryInteractEvent;
+import org.bukkit.inventory.InventoryView;
+import org.x00hero.Menu.Events.Menu.MenuInteractEvent;
 import org.x00hero.Menu.Menu;
-import org.x00hero.Menu.MenuItem;
+import org.x00hero.Menu.Items.MenuItem;
 import org.x00hero.Menu.Pages.Page;
 
-public class MenuItemAddEvent extends Event implements Cancellable {
+public class MenuItemAddEvent extends MenuInteractEvent {
     private final Menu menu;
     private final Page page;
     private final MenuItem menuItem;
-    private final Player whoClicked;
-    private final InventoryInteractEvent event;
-    private static final HandlerList HANDLERS_LIST = new HandlerList();
 
-    public MenuItemAddEvent(Player whoClicked, MenuItem menuItem, Page page, InventoryInteractEvent event) {
-        this.whoClicked = whoClicked;
+    public MenuItemAddEvent(InventoryView transaction, MenuItem menuItem, Page page) {
+        super(transaction, menuItem, page);
         this.menuItem = menuItem;
         this.page = page;
         this.menu = page.getMenu();
-        this.event = event;
     }
 
-    public Player getPlayer() { return whoClicked; }
+    public Player getPlayer() { return (Player) transaction.getPlayer(); }
     public Menu getMenu() { return menu; }
     public Page getPage() { return page; }
     public String getID() { return menuItem.getID(); }
     public MenuItem getMenuItem() { return menuItem; }
     public int getSlot() { return menuItem.getSlot(); }
 
-    public boolean isCancelled() { return event != null && event.isCancelled(); }
-    public void setCancelled(boolean b) { getEvent().setCancelled(b); }
-
-    @Override
-    public HandlerList getHandlers() { return HANDLERS_LIST; }
-    public static HandlerList getHandlerList() { return HANDLERS_LIST; }
-    public InventoryInteractEvent getEvent() { return event; }
 }
